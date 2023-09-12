@@ -74,6 +74,48 @@
 
     });
   </script>
+  <script type="text/javascript">
+    var reportviewer;
+    require(["reportviewer/reportviewer","reportviewer/reportviewer-prompt","reportviewer/reportviewer-logging"],
+        function(Viewer,Prompt,logging){
+          window._isReportViewer = true;
+          window._isTopReportViewer = true;
+          var options;
+          if (_isTopReportViewer) {
+            var qs;
+            try {
+              qs = window.top.location.search;
+            } catch (ex) {
+              qs = window.location.search;
+            } /*XSS*/
+
+            options = {enabled: !!qs && ("&" + qs.substr(1)).indexOf("&debug=true") >= 0};
+          } else {
+            options = {parent: window.parent.logger};
+          }
+          window.logged = logging.create(/*logger id*/window.name, options);
+          window.logger = window.logged.logger;
+          window.prompt = new Prompt();
+          window.viewer = new Viewer(prompt);
+          reportviewer = viewer;
+    });
+  </script>
+  <script>
+    window.onload = function(){
+        var dashboardView = window.frameElement.src.indexOf('dashboard-view') !== -1;
+        if(dashboardView) {
+          var exportDiv = document.getElementById("toolbar1.exportReportButton");
+          var exportSepDiv = document.getElementById("toolbar1.exportReportSeperator");
+          exportDiv.style.display = "inline-block";
+          exportSepDiv.style.display = "inline-block";
+        }
+    };
+  </script>
+  <script>
+    function exportReportInHtml(outputTargetType) {
+      reportviewer.exportReport(outputTargetType);
+    }
+    </script>
 </head>
 
 <body class="tundra body contentHidden">
@@ -81,6 +123,29 @@
   <div id="toppanelinner" >
     <div id="toolbarlinner2" class="pentaho-rounded-panel2-shadowed pentaho-padding-sm pentaho-shine pentaho-background">
       <div id="toolbar" data-dojo-type="dijit.Toolbar">
+	    <div data-dojo-type="dijit.form.DropDownButton" id="toolbar1.exportReportButton"
+                     iconClass="pentaho_dijitEditorIconExport" showLabel="true" style="display: none">
+            <span>Export</span>
+            <div data-dojo-type="pentaho.common.Menu" id="toolbar1.exportReportMenu">
+                <div data-dojo-type="pentaho.common.MenuItem" id="toolbar1.exportPDF"
+                             onclick="exportReportInHtml('pageable/pdf')">PDF...
+                </div>
+                <div data-dojo-type="pentaho.common.MenuItem" id="toolbar1.exportHTML"
+                             onclick="exportReportInHtml('table/html;page-mode=page')">HTML...
+                </div>
+                <div data-dojo-type="pentaho.common.MenuItem" id="toolbar1.exportCSV"
+                             onclick="exportReportInHtml('table/csv;page-mode=stream')">CSV
+                </div>
+                <div data-dojo-type="pentaho.common.MenuItem" id="toolbar1.exportExcel2007"
+                             onclick="exportReportInHtml('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;page-mode=flow')">
+                            Excel Workbook
+                </div>
+                <div data-dojo-type="pentaho.common.MenuItem" id="toolbar1.exportExcel"
+                             onclick="exportReportInHtml('table/excel;page-mode=flow')">Excel 97-2003 Workbook
+                </div>
+            </div>
+        </div>
+        <span id="toolbar1.exportReportSeperator" data-dojo-type="dijit.ToolbarSeparator" style="display: none"></span>
         <div id="pageControl" data-dojo-type="pentaho.common.PageControl" class="dijitInline"></div>
         <span id="toolbar-parameter-separator" data-dojo-type="dijit.ToolbarSeparator"></span>
         <div id="toolbar-parameterToggle" data-dojo-type="dijit.form.ToggleButton" iconClass="dijitEditorIcon dijitEditorIconParameters" showLabel="false">Parameters</div>

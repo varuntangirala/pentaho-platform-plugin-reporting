@@ -1931,6 +1931,24 @@ define([ 'common-ui/util/util', 'common-ui/util/timeutil', 'common-ui/util/forma
       
       _isIE11: function(){
         return has("trident") && !has("ie"); //has("ie") in IE11 is undefined
+      },
+	  
+      exportReport: function (outputTarget) {
+        var options = this._buildReportContentOptions();
+        options['output-target'] = outputTarget;
+        var url = this._buildReportContentUrl(options);
+        var  win = window.open("");
+        var  doc = win.document;
+        doc.open();
+        doc.write(
+          "<html>" +
+          "<form method=\"POST\" id=\"dashboardexportform\" action=\"" + url + "\" name=\"dashboardexportform\">" +
+          "<\/form>" +
+          "</body>" +
+          "</html>"
+        );
+        doc.close();
+        doc.getElementById("dashboardexportform").submit();
       }
 
     }); // end of: var v = {
